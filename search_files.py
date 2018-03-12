@@ -12,52 +12,44 @@ def get_dir_file_names(dir_path):
     return os.listdir(dir_path)
 
 
-def check_substr_in_string(substr):
-    def check(string):
-        return substr in string
-
-    return check
+def check_substr_in_string(substr, string):
+    return string.strip().endswith(substr)
 
 
 def filter_sql_files_in_list(file_names_list):
-    return list(filter(check_substr_in_string('.sql'), file_names_list))
+    filter_sql_files_helper = lambda x: check_substr_in_string('.sql', x)
+
+    return list(filter(filter_sql_files_helper, file_names_list))
 
 
-def read_files_by_names(files_dir_path, file_names_list):
-    def_result = dict()
+def read_file_by_name(file_dir_path, file_name):
+    path_to_file = os.path.join(file_dir_path, file_name)
 
-    for file_name in file_names_list:
-        file_path = os.path.join(files_dir_path, file_name)
-
-        with open(file_path) as f:
-            file_data = f.read()
-            def_result.update({file_name: file_data})
-
-    return def_result
-
-
-def print_list(data_list):
-    for value in data_list:
-        print(value)
+    with open(path_to_file) as f:
+        return f.read()
 
 
 # Рекурсивная функция
-def search_by_input_and_print(files_data_dict):
+def search_by_input_and_print(files_data_dict={}, filenames_list=[],
+                              readfiles_function=None):
     filtered_dict = dict()
     search_word = input('Введите строку: ').lower()
 
-    for file_name in files_data_dict:
-        file_data = files_data_dict[file_name].lower()
+    for file_name in (files_data_dict if files_data_dict else filenames_list):
+        if files_data_dict:
+            file_data = files_data_dict[file_name]
+        else:
+            file_data = readfiles_function(file_name)
+
+        file_data = file_data.lower()
 
         if search_word in file_data:
-            filtered_dict.update({file_name: file_data})
+            filtered_dict[file_name] = file_data
 
-    filtered_file_names = filtered_dict.keys()
-    print_list(filtered_file_names)
+    [print(value) for value in filtered_dict]
+    print(f'Всего: {len(filtered_dict)}')
 
-    print('Всего: {}'.format(len(filtered_file_names)))
-
-    search_by_input_and_print(filtered_dict)
+    search_by_input_and_print(files_data_dict=filtered_dict)
 
 
 def core():
@@ -66,9 +58,12 @@ def core():
     target_dir_file_names = get_dir_file_names(target_dir_path)
 
     filtered_file_names = filter_sql_files_in_list(target_dir_file_names)
-    files_data = read_files_by_names(target_dir_path, filtered_file_names)
 
-    search_by_input_and_print(files_data)
+    read_file_with_path = lambda filename: \
+        read_file_by_name(target_dir_path, filename)
+
+    search_by_input_and_print(filenames_list=filtered_file_names,
+                              readfiles_function=read_file_with_path)
 
 
 if __name__ == '__main__':
