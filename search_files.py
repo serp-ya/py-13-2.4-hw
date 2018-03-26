@@ -30,8 +30,10 @@ def read_file_by_name(file_dir_path, file_name):
 
 
 # Рекурсивная функция
-def search_by_input_and_print(files_data_dict={}, filenames_list=[],
+def search_by_input_and_print(files_data_dict=None, filenames_list=None,
                               readfiles_function=None):
+    files_data_dict = files_data_dict or {}
+    filenames_list = filenames_list or []
     filtered_dict = dict()
     search_word = input('Введите строку: ').lower()
 
